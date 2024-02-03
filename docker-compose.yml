@@ -1,0 +1,11 @@
+version: '3'
+services:
+  app:
+    build: .
+    image: qr-code-generator:v1
+    container_name: qr-code-generator
+    ports:
+      - 8000:80
+    volumes:
+      - .:/app
+    command: tail -f /dev/null

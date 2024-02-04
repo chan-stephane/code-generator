@@ -7,5 +7,5 @@ services:
     ports:
       - 8000:80
     volumes:
-      - .:/app
+      - .:/qr-code-generator
     command: tail -f /dev/null

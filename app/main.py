@@ -14,7 +14,7 @@ class QRCodeRequest(BaseModel):
     color: Optional[str] = '#000000'
     bg_color: Optional[str] = '#ffffff'
     style_points: Optional[str] = 'square'
-    image_url: Optional[str] = None
+    image_url: Optional[str] = ''
 
 app = FastAPI()
 
@@ -85,16 +85,16 @@ def hex_to_rgb(hex_color):
 
 def generate_qrcode(data, qr_color=None, background_color=None, style_point=None, image_url=None):
 
-    qr_color = '#000000' if qr_color is None else qr_color
-    background_color = '#ffffff' if background_color is None else background_color
-    style_point = 'square' if style_point is None else style_point
+    qr_color = '#000000' if qr_color is None else '#000000' if qr_color=='' else qr_color 
+    background_color = '#ffffff' if background_color is None else '#ffffff' if background_color=='' else background_color
+    style_point = 'square' if style_point is None else 'square' if style_point=='' else style_point
 
     valid_style_points = ['square', 'gapped_square', 'circle', 'rounded', 'vertical_bar', 'horizontal_bar']
     if style_point not in valid_style_points:
         raise HTTPException(status_code=400, detail="Invalid style_point")
 
     logo = None
-    if image_url:
+    if image_url and image_url!='':
         logo = process_resize_image(image_url,border_color=background_color)
         logo = logo.resize((50, int((50 / float(logo.size[0])) * float(logo.size[1]))), Image.LANCZOS)
         background = Image.new('RGB', logo.size, background_color)

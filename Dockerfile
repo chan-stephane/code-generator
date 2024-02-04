@@ -1,11 +1,11 @@
-FROM python:3.8-slim
+FROM python:3.8-alpine
 
 WORKDIR /code-generator
 
-#install of dependencies
-RUN pip install Pillow python-barcode qrcode fastapi python-dotenv requests "uvicorn[standard]"
+COPY app/ /code-generator/app/
 
-ENV APP_PORT=80
+RUN pip install --no-cache-dir Pillow python-barcode qrcode fastapi requests "uvicorn[standard]"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$APP_PORT"]
-# uvicorn app.main:app --host 0.0.0.0 --port 80
+ENV APP_PORT=8080
+
+CMD uvicorn app.main:app --host 0.0.0.0 --port $APP_PORT

@@ -5,8 +5,8 @@ services:
     image: code-generator:v1
     container_name: code-generator
     ports:
-      - 8000:80
-    volumes:
-      - .:/code-generator
+      - 8080:8080
+    # volumes:
+    #   - .:/code-generator
     environment:
-      - APP_PORT=80
+      - APP_PORT=8080

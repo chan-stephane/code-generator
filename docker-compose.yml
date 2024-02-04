@@ -1,8 +1,7 @@
 version: '3'
 services:
   app:
-    build: .
-    image: code-generator:v1
+    image: code-generator:latest
     container_name: code-generator
     ports:
       - 8080:8080

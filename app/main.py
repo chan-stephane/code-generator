@@ -1,12 +1,20 @@
-from typing import Union
+from typing import Optional
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
+from pydantic import BaseModel
+from fastapi.responses import Response, StreamingResponse, JSONResponse
 from io import BytesIO
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageColor
 from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import *
 from qrcode.image.styles.colormasks import *
 import qrcode,requests
+
+class QRCodeRequest(BaseModel):
+    data: str = 'Some data'
+    color: Optional[str] = '#000000'
+    bg_color: Optional[str] = '#ffffff'
+    style_points: Optional[str] = 'square'
+    image_url: Optional[str] = None
 
 app = FastAPI()
 
@@ -16,17 +24,17 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/test")
-async def get_qrcode():
-    url_1 = 'https://logos-marques.com/wp-content/uploads/2020/09/Logo-Instagram-1-500x281.png'
-    url_2 = 'https://logos-marques.com/wp-content/uploads/2021/10/meta_logo-500x250.png'
-    url_3 = 'https://logos-marques.com/wp-content/uploads/2021/03/Uber-Eats-Logo-500x283.png'
-    image_data = generate_qrcode('Stephane', None, None, None, url_1)
-    if image_data:
-        return Response(content=image_data, media_type="image/png")
-    else:
-        raise HTTPException(status_code=400, detail="Error when generating qr code")
 
+@app.post("/qr-code/generate")
+async def generate_qrcode_endpoint(request: QRCodeRequest):
+    try:
+        qr_code_image = generate_qrcode(request.data, request.color, request.bg_color, request.style_points, request.image_url)
+        return StreamingResponse(BytesIO(qr_code_image), media_type="image/png")
+        # return Response(content=qr_code_image, media_type="image/png")
+    except HTTPException as e:
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+
+"""
 def fit_cover(image, target_size):
 
     original_width, original_height = image.size
@@ -40,6 +48,7 @@ def fit_cover(image, target_size):
         new_height = target_height
     resized_image = image.resize((new_width, new_height), Image.LANCZOS)
     return resized_image
+"""
 
 def process_resize_image(image_url, target_size=(50, 50), border_size=2, border_color="white"):
     image_response = requests.get(image_url)
@@ -69,25 +78,34 @@ def process_resize_image(image_url, target_size=(50, 50), border_size=2, border_
     resized_image_with_border = ImageOps.expand(resized_image, border=border_size, fill=border_color)
     return resized_image_with_border
 
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 
-def generate_qrcode(data, qr_color='#000000', background_color='#ffffff', style_point='square', image_url=None):
-    qr_color = qr_color or '#000000'
-    background_color = background_color or '#ffffff'
-    style_point = style_point or 'square'
+def generate_qrcode(data, qr_color=None, background_color=None, style_point=None, image_url=None):
+
+    qr_color = '#000000' if qr_color is None else qr_color
+    background_color = '#ffffff' if background_color is None else background_color
+    style_point = 'square' if style_point is None else style_point
+
+    valid_style_points = ['square', 'gapped_square', 'circle', 'rounded', 'vertical_bar', 'horizontal_bar']
+    if style_point not in valid_style_points:
+        raise HTTPException(status_code=400, detail="Invalid style_point")
 
     logo = None
     if image_url:
-        logo = process_resize_image(image_url)
+        logo = process_resize_image(image_url,border_color=background_color)
         logo = logo.resize((50, int((50 / float(logo.size[0])) * float(logo.size[1]))), Image.LANCZOS)
-        background = Image.new('RGB', logo.size, 'white')
+        background = Image.new('RGB', logo.size, background_color)
         background.paste(logo, (0, 0), logo)
         logo = background
         
     QRcode = qrcode.QRCode(
         error_correction=qrcode.constants.ERROR_CORRECT_H,
+        image_factory=StyledPilImage,
         box_size=10,
-        border=1,   
+        border=2,   
     )
     
     QRcode.add_data(data)
@@ -102,14 +120,14 @@ def generate_qrcode(data, qr_color='#000000', background_color='#ffffff', style_
         'vertical_bar': VerticalBarsDrawer(),
         'horizontal_bar': HorizontalBarsDrawer()
     }
+
     module_drawer = style_point_mapping.get(style_point, SquareModuleDrawer())
 
     QRimg = QRcode.make_image(
         version=40,
-        fill_color=qr_color, 
-        back_color=background_color,
-        image_factory=StyledPilImage,
         module_drawer=module_drawer,
+        eye_drawer=module_drawer,
+        color_mask=SolidFillColorMask(back_color=hex_to_rgb(background_color),front_color=hex_to_rgb(qr_color)),
     ).convert('RGB')
     
     if logo:

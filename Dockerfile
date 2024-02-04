@@ -1,9 +1,9 @@
 FROM python:3.8-slim
 
-WORKDIR /qr-code-generator
+WORKDIR /code-generator
 
 #install of dependencies
-RUN pip install Pillow image_sizer qrcode fastapi python-dotenv requests "uvicorn[standard]"
+RUN pip install Pillow python-barcode qrcode fastapi python-dotenv requests "uvicorn[standard]"
 
 ENV APP_PORT=80
 

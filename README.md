@@ -9,7 +9,7 @@ A simple API for generate a qr code and bar code
 clone this repository and install python 3.8 or highter, and install dependencies
 
 ```bash
-  RUN pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]"
+pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]"
 ```
     
 
@@ -40,7 +40,7 @@ you can go to on http://localhost:8080/docs for test
 
 #### Generate a qr code
 
-```http
+```bash
   POST /qr-code/generate
 ```
 
@@ -54,7 +54,7 @@ you can go to on http://localhost:8080/docs for test
 
 #### Generate a bar code
 
-```http
+```bash
   POST /bar-code/generate
 ```
 

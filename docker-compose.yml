@@ -1,11 +1,13 @@
 version: '3'
 services:
   app:
-    image: chanstephane/code-generator:latest
+    build: .
+    image: code-generator:full
     container_name: code-generator
     ports:
       - 8080:8080
-    # volumes:
-    #   - .:/code-generator
+    volumes:
+      - .:/code-generator
     environment:
       - APP_PORT=8080
+    # command: tail -f /dev/null

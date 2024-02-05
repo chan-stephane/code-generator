@@ -55,7 +55,8 @@ def generate_qrcode(data, qr_color=None, background_color=None, style_point=None
     if image_url and image_url!='':
         logo = process_resize_image(image_url,border_color=background_color)
         logo = logo.resize((50, int((50 / float(logo.size[0])) * float(logo.size[1]))), Image.LANCZOS)
-        background = Image.new('RGB', logo.size, background_color)
+        logo = logo.convert('RGBA')
+        background = Image.new('RGBA', logo.size, hex_to_rgb(background_color) + (255,))
         background.paste(logo, (0, 0), logo)
         logo = background
         

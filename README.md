@@ -65,7 +65,14 @@ you can go to on http://localhost:8080/docs for test
 
 
 ## Tech Stack
-
-fastAPI, Python
+<a href="https://www.python.org" target="_blank">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+</a>
+<a href="https://www.docker.com/">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white">
+</a>
+<a href="https://fastapi.tiangolo.com/">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009485?style=for-the-badge&logo=fastapi&logoColor=white">
+</a>
 
 

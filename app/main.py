@@ -23,10 +23,8 @@ app = FastAPI()
 def is_not_encoded(data):
     try:
         decoded_data = unquote(data)
-        # If decoding is successful and the decoded data matches the original, it's not encoded
         return decoded_data == data
     except Exception:
-        # If decoding fails or the decoded data doesn't match, it's likely encoded
         return False
 
 

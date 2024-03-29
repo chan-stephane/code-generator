@@ -2,7 +2,7 @@ version: '3'
 services:
   app:
     build: .
-    image: code-generator:dev
+    image: code-generator:latest
     container_name: code-generator
     ports:
       - 8080:8080
@@ -10,4 +10,3 @@ services:
       - .:/code-generator
     environment:
       - APP_PORT=8080
-    command: tail -f /dev/null

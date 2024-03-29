@@ -18,7 +18,7 @@ pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]"
 run this command to run the project:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 80
+uvicorn app.main:app --host 0.0.0.0 --port 8080
 ```
 
 ## Run in Docker
@@ -39,6 +39,19 @@ docker compose up -d
 you can go to on http://localhost:8080/docs for test
 
 #### Generate a qr code
+
+
+```bash
+  GET /qr-code?data=(encoded data)
+```
+
+You can generate the qr code directly in an html img like
+
+```html
+<img src="http://localhost:8080/qr-code?data=Some%20data" alt=""/>
+```
+
+or for more customize qr code you can use
 
 ```bash
   POST /qr-code/generate

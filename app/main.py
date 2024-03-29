@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse, JSONResponse
 from .code_generator import generate_qrcode, generate_barcode
@@ -19,6 +19,10 @@ class BARCodeRequest(BaseModel):
 
 app = FastAPI()
 
+
+@app.get("/")
+def welcome(request: Request):
+    return JSONResponse(content={"message": "Code generator is working successfully, go to {}docs to test".format(request.url)}, status_code=200)
 
 @app.post("/qr-code/generate")
 async def generate_qrcode_endpoint(request: QRCodeRequest):

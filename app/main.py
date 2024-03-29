@@ -1,6 +1,7 @@
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Query, Request, HTTPException
 from pydantic import BaseModel
+from urllib.parse import quote, unquote
 from fastapi.responses import StreamingResponse, JSONResponse
 from .code_generator import generate_qrcode, generate_barcode
 from io import BytesIO
@@ -18,6 +19,40 @@ class BARCodeRequest(BaseModel):
     data: str = 'Some data'
 
 app = FastAPI()
+
+def is_not_encoded(data):
+    try:
+        decoded_data = unquote(data)
+        # If decoding is successful and the decoded data matches the original, it's not encoded
+        return decoded_data == data
+    except Exception:
+        # If decoding fails or the decoded data doesn't match, it's likely encoded
+        return False
+
+
+def handleErrorEncoded(msg):
+    return JSONResponse(content={"error": msg}, status_code=400)
+
+@app.get("/")
+def welcome(request: Request):
+    return JSONResponse(content={"message": "Code generator is working successfully, go to {}docs to test".format(request.url)}, status_code=200)
+
+@app.get("/qr-code")
+async def on_demand_qr_code(
+    data: str = Query('Some data')
+):
+    try:
+        color ='#000000'
+        bg_color = '#ffffff'
+        style_points = 'square'
+        image_url = ''
+        if is_not_encoded(data): 
+            qr_code_data = generate_qrcode(data, color, bg_color, style_points, image_url)
+            return StreamingResponse(BytesIO(qr_code_data), media_type="image/png")
+        else:
+            return handleErrorEncoded('field data should be encoded')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/qr-code/generate")

@@ -10,4 +10,4 @@ ENV APP_PORT=8081
 
 WORKDIR /code-generator/app/
 
-CMD uvicorn main:app --host 0.0.0.0 --port $APP_PORT
+CMD uvicorn main:app --host 0.0.0.0 --port $APP_PORT --forwarded-allow-ips=*

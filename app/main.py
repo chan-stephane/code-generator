@@ -1,9 +1,12 @@
 from typing import Optional
 from fastapi import FastAPI, Query, Request, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from urllib.parse import quote, unquote
 from fastapi.responses import StreamingResponse, JSONResponse
-from .code_generator import generate_qrcode, generate_barcode
+from code_generator import generate_qrcode, generate_barcode
 from io import BytesIO
 
 
@@ -20,6 +23,10 @@ class BARCodeRequest(BaseModel):
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
 def is_not_encoded(data):
     try:
         decoded_data = unquote(data)
@@ -31,9 +38,17 @@ def is_not_encoded(data):
 def handleErrorEncoded(msg):
     return JSONResponse(content={"error": msg}, status_code=400)
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="index.html"
+    )
+
+
+@app.get("/up")
 def welcome(request: Request):
     return JSONResponse(content={"message": "Code generator is working successfully, go to {}docs to test".format(request.url)}, status_code=200)
+
 
 @app.get("/qr-code")
 async def on_demand_qr_code(

@@ -4,42 +4,34 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import *
 from qrcode.image.styles.colormasks import *
 from barcode.writer import ImageWriter
-import qrcode,barcode,requests
-
-def process_resize_image(image_url, target_size=(50, 50), border_size=2, border_color="white"):
-    image_response = requests.get(image_url)
-    original_image = Image.open(BytesIO(image_response.content))
-
-    # Get the original image dimensions
-    original_width, original_height = original_image.size
-
-    # Calculate the aspect ratio
-    aspect_ratio = original_width / original_height
-
-    # Calculate the target dimensions with cover approach
-    target_width, target_height = target_size
-    target_aspect_ratio = target_width / target_height
-
-    if aspect_ratio > target_aspect_ratio:
-        new_width = int(target_height * aspect_ratio)
-        resized_image = original_image.resize((new_width, target_height), Image.LANCZOS)
-        left_margin = (new_width - target_width) // 2
-        resized_image = resized_image.crop((left_margin, 0, left_margin + target_width, target_height))
-    else:
-        new_height = int(target_width / aspect_ratio)
-        resized_image = original_image.resize((target_width, new_height), Image.LANCZOS)
-        top_margin = (new_height - target_height) // 2
-        resized_image = resized_image.crop((0, top_margin, target_width, top_margin + target_height))
-
-    resized_image_with_border = ImageOps.expand(resized_image, border=border_size, fill=border_color)
-    return resized_image_with_border
-
+from pathlib import Path
+import qrcode,barcode,requests,random
 
 
 def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
+def resizing_image(img, target_size=(300, 300), border_size=2, border_color="white"):
+    original_width, original_height = img.size
+    # Calculate the aspect ratio
+    aspect_ratio = original_width / original_height
+    # Calculate the target dimensions with cover approach
+    target_width, target_height = target_size
+    target_aspect_ratio = target_width / target_height
+    if aspect_ratio > target_aspect_ratio:
+        new_width = int(target_height * aspect_ratio)
+        resized_image = img.resize((new_width, target_height), Image.LANCZOS)
+        left_margin = (new_width - target_width) // 2
+        resized_image = resized_image.crop((left_margin, 0, left_margin + target_width, target_height))
+    else:
+        new_height = int(target_width / aspect_ratio)
+        resized_image = img.resize((target_width, new_height), Image.LANCZOS)
+        top_margin = (new_height - target_height) // 2
+        resized_image = resized_image.crop((0, top_margin, target_width, top_margin + target_height))
+
+    resized_image_with_border = ImageOps.expand(resized_image, border=border_size, fill=border_color)
+    return resized_image_with_border
 
 def generate_qrcode(data, qr_color=None, background_color=None, style_point=None, image_url=None):
 
@@ -53,7 +45,9 @@ def generate_qrcode(data, qr_color=None, background_color=None, style_point=None
 
     logo = None
     if image_url and image_url!='':
-        logo = process_resize_image(image_url,border_color=background_color)
+        image_response = requests.get(image_url)
+        original_image = Image.open(BytesIO(image_response.content))
+        logo = resizing_image(original_image, target_size=(50,50))
         logo = logo.resize((50, int((50 / float(logo.size[0])) * float(logo.size[1]))), Image.LANCZOS)
         logo = logo.convert('RGBA')
         background = Image.new('RGBA', logo.size, hex_to_rgb(background_color) + (255,))
@@ -95,7 +89,7 @@ def generate_qrcode(data, qr_color=None, background_color=None, style_point=None
             (QRimg.size[1] - logo.size[1]) // 2
         )
         QRimg.paste(logo, pos)
-    
+    QRimg = resizing_image(QRimg)
     img_bytes = BytesIO()
     QRimg.save(img_bytes, format='PNG')
     return img_bytes.getvalue()
@@ -106,3 +100,26 @@ def generate_barcode(data):
     writer = ImageWriter()
     code = barcode.generate('code128', data, writer=writer,output=barcode_bytes)
     return barcode_bytes.getvalue()
+
+def load_random_template_image():
+    current_dir = Path(__file__).parent
+    templates_dir = current_dir / "templates_images"
+    
+    image_files = list(templates_dir.glob("*.png"))
+    if not image_files:
+        return None
+    random_image_path = random.choice(image_files)
+    return Image.open(random_image_path)
+
+def generate_qrcode_download(data, qr_color=None, background_color=None, style_point=None, image_url=None):
+    qr_code_data = generate_qrcode(data, qr_color, background_color, style_point, image_url)
+    image_stream = BytesIO(qr_code_data)
+    qr_code_img = Image.open(image_stream) 
+    template_img = load_random_template_image()
+    template_img = resizing_image(template_img, target_size=(450,450))
+    template_img.paste(qr_code_img,(75, 50, 75 + qr_code_img.size[0], 50 + qr_code_img.size[1]))
+    template_img = resizing_image(template_img, border_size=0)
+    img_bytes = BytesIO()
+    template_img.save(img_bytes, format='PNG')
+    return img_bytes.getvalue()
+    

@@ -6,7 +6,5 @@ services:
     container_name: code-generator
     ports:
       - 8081:8081
-    volumes:
-      - .:/code-generator
     environment:
       - APP_PORT=8081

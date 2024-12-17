@@ -113,11 +113,13 @@ def load_random_template_image():
 
 def generate_qrcode_download(data, qr_color=None, background_color=None, style_point=None, image_url=None):
     qr_code_data = generate_qrcode(data, qr_color, background_color, style_point, image_url)
+    template_img = load_random_template_image()
+    if template_img is None:
+        return qr_code_data
     image_stream = BytesIO(qr_code_data)
     qr_code_img = Image.open(image_stream) 
-    template_img = load_random_template_image()
-    template_img = resizing_image(template_img, target_size=(450,450))
-    template_img.paste(qr_code_img,(75, 50, 75 + qr_code_img.size[0], 50 + qr_code_img.size[1]))
+    qr_code_img = resizing_image(qr_code_img, target_size=(700,700))
+    template_img.paste(qr_code_img,(150, 100, 150 + qr_code_img.size[0], 100 + qr_code_img.size[1]))
     template_img = resizing_image(template_img, border_size=0)
     img_bytes = BytesIO()
     template_img.save(img_bytes, format='PNG')

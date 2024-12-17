@@ -46,7 +46,13 @@ async function call(url, data) {
     });
 }
 
+function loaderComponent(){
+    var component = $('<div>').addClass('w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin');
+    $('#img-div').empty().append(component);
+}
+
 async function generate(){
+    loaderComponent()
     var type_code = $('#type-code').find(":selected").val();
     var data = $('#data').val();
     var endpoints = window.location.origin;

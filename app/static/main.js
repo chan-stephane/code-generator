@@ -1,10 +1,5 @@
-function load(){
-    $('#copyright').text(` © ${new Date().getFullYear()} Stéphane CHAN HIOU KONG`);
-}
-
 function update_type(){
     var el = event.target;
-    console.log(el.value);
     if (el.value == 'bar-code'){
         $('#background').attr('disabled','disabled');
         $('#foreground').attr('disabled','disabled');
@@ -46,6 +41,10 @@ async function call(url, data) {
     });
 }
 
+function load(){
+    $('#copyright').text(` © ${new Date().getFullYear()} Stéphane CHAN HIOU KONG`);
+}
+
 function loaderComponent(){
     var component = $('<div>').addClass('w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin');
     $('#img-div').empty().append(component);
@@ -66,12 +65,10 @@ async function generate(){
         let bg_temp = $('#background').val();
         let color_temp = $('#foreground').val();
         let form_temp = $('#form-code').val();
-        
         data_formatted.bg_color = (isHexadecimal(bg_temp)) ? bg_temp : background;
         data_formatted.color = (isHexadecimal(color_temp)) ? color_temp : color;
         data_formatted.style_points = (isValidForm(form_temp)) ? form_temp : form;
     }
-    console.log(data_formatted);
     try {
         const response = await call(endpoints + "/" + type_code + "/generate", data_formatted);
         var url = URL.createObjectURL(response);
@@ -80,7 +77,6 @@ async function generate(){
             const response_download = await call(endpoints + "/" + type_code + "/download", data_formatted);
             url_download = URL.createObjectURL(response_download);
         }
-
         Toastify({
             text: "Generated successfully",
             backgroundColor: "rgb(75, 230, 134)",

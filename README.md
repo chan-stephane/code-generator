@@ -3,13 +3,12 @@
 
 A simple API for generate a qr code and bar code 
 
-
 ## Installation
 
 clone this repository and install python 3.8 or highter, and install dependencies
 
 ```bash
-pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]"
+pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]" jinja2
 ```
     
 

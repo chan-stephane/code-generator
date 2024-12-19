@@ -120,7 +120,7 @@ def generate_qrcode_download(data, qr_color=None, background_color=None, style_p
     qr_code_img = Image.open(image_stream) 
     qr_code_img = resizing_image(qr_code_img, target_size=(700,700))
     template_img.paste(qr_code_img,(150, 100, 150 + qr_code_img.size[0], 100 + qr_code_img.size[1]))
-    template_img = resizing_image(template_img, border_size=0)
+    template_img = resizing_image(template_img, target_size=(600,600), border_size=0)
     img_bytes = BytesIO()
     template_img.save(img_bytes, format='PNG')
     return img_bytes.getvalue()

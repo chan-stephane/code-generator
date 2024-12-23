@@ -4,10 +4,12 @@ function update_type(){
         $('#background').attr('disabled','disabled');
         $('#foreground').attr('disabled','disabled');
         $('#form-code').attr('disabled','disabled');
+        $('#image-link').attr('disabled','disabled');
     }else{
         $('#background').removeAttr('disabled');
         $('#foreground').removeAttr('disabled');
         $('#form-code').removeAttr('disabled');
+        $('#image-link').removeAttr('disabled');
     }
 }
 
@@ -23,19 +25,35 @@ function isValidForm(str){
 
 async function call(url, data) {
     return new Promise((resolve, reject) => {
+        let error_msg = 'Error on generate qr code';
         $.ajax({
             url: url,
             type: "POST",
             data: JSON.stringify(data),
             contentType: "application/json",
-            xhrFields: {
-                responseType: "blob"
+            xhr: function() {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 2) {
+                        if (xhr.status == 200) {
+                            xhr.responseType = "blob";
+                        } else {
+                            xhr.responseType = "json";
+                        }
+                    }
+                    if (xhr.readyState == 4){
+                        if (xhr.response && xhr.response.error) {
+                            error_msg = xhr.response.error;
+                        }
+                    }
+                };
+                return xhr;
             },
             success: function(response) {
                 resolve(response);
             },
             error: function(xhr, status, error) {
-                reject(error);
+                reject(error_msg);
             }
         });
     });
@@ -68,6 +86,7 @@ async function generate(){
         data_formatted.bg_color = (isHexadecimal(bg_temp)) ? bg_temp : background;
         data_formatted.color = (isHexadecimal(color_temp)) ? color_temp : color;
         data_formatted.style_points = (isValidForm(form_temp)) ? form_temp : form;
+        data_formatted.image_url = $('#image-link').val();
     }
     try {
         const response = await call(endpoints + "/" + type_code + "/generate", data_formatted);
@@ -96,11 +115,12 @@ async function generate(){
         $('#btn').after(downloadButton);
         $('#img-div').empty().append(img);
     } catch (error) {
+        $('#img-div').empty();
         if ($('#btn-dwn').length > 0) {
             $('#btn-dwn').remove();
         }
         Toastify({
-            text: "Error on generate your image",
+            text: error,
             backgroundColor: "rgb(230, 108, 81)",
             close: true
         }).showToast();

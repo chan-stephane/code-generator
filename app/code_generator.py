@@ -4,6 +4,7 @@ from qrcode.image.styledpil import StyledPilImage
 from qrcode.image.styles.moduledrawers.pil import *
 from qrcode.image.styles.colormasks import *
 from barcode.writer import ImageWriter
+from fastapi import HTTPException
 from pathlib import Path
 import qrcode,barcode,requests,random
 
@@ -12,11 +13,19 @@ def hex_to_rgb(hex_color):
     hex_color = hex_color.lstrip('#')
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
+def is_image_url(url):
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        content_type = response.headers.get('Content-Type', '').lower()
+        return content_type.startswith('image/')
+    except requests.RequestException as e:
+        return False
+
+
 def resizing_image(img, target_size=(300, 300), border_size=2, border_color="white"):
     original_width, original_height = img.size
-    # Calculate the aspect ratio
     aspect_ratio = original_width / original_height
-    # Calculate the target dimensions with cover approach
     target_width, target_height = target_size
     target_aspect_ratio = target_width / target_height
     if aspect_ratio > target_aspect_ratio:
@@ -38,22 +47,29 @@ def generate_qrcode(data, qr_color=None, background_color=None, style_point=None
     qr_color = '#000000' if qr_color is None else '#000000' if qr_color=='' else qr_color 
     background_color = '#ffffff' if background_color is None else '#ffffff' if background_color=='' else background_color
     style_point = 'square' if style_point is None else 'square' if style_point=='' else style_point
-
+    if background_color == '#000000':
+        print('go change color')
+        background_color = '#111111'
     valid_style_points = ['square', 'gapped_square', 'circle', 'rounded', 'vertical_bar', 'horizontal_bar']
     if style_point not in valid_style_points:
         raise HTTPException(status_code=400, detail="Invalid style_point")
 
     logo = None
+
     if image_url and image_url!='':
-        image_response = requests.get(image_url)
-        original_image = Image.open(BytesIO(image_response.content))
-        logo = resizing_image(original_image, target_size=(50,50))
-        logo = logo.resize((50, int((50 / float(logo.size[0])) * float(logo.size[1]))), Image.LANCZOS)
-        logo = logo.convert('RGBA')
-        background = Image.new('RGBA', logo.size, hex_to_rgb(background_color) + (255,))
-        background.paste(logo, (0, 0), logo)
-        logo = background
-        
+        if is_image_url(image_url):
+            image_response = requests.get(image_url)
+            original_image = Image.open(BytesIO(image_response.content))
+            const_w = 50
+            new_logo_size = (const_w, (original_image.size[1] * const_w) // original_image.size[0])
+            logo = resizing_image(original_image, target_size=new_logo_size)
+            logo = logo.convert('RGBA')
+            background = Image.new('RGBA', logo.size, hex_to_rgb(background_color) + (255,))
+            background.paste(logo, (0, 0), logo)
+            logo = background
+        else:
+            raise HTTPException(status_code=400, detail="Field image_url is not a valid url")
+
     QRcode = qrcode.QRCode(
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         image_factory=StyledPilImage,
@@ -81,7 +97,7 @@ def generate_qrcode(data, qr_color=None, background_color=None, style_point=None
         module_drawer=module_drawer,
         eye_drawer=module_drawer,
         color_mask=SolidFillColorMask(back_color=hex_to_rgb(background_color),front_color=hex_to_rgb(qr_color)),
-    ).convert('RGB')
+    ).convert('RGBA')
     
     if logo:
         pos = (
@@ -117,10 +133,19 @@ def generate_qrcode_download(data, qr_color=None, background_color=None, style_p
     if template_img is None:
         return qr_code_data
     image_stream = BytesIO(qr_code_data)
+    template_w, template_h = template_img.size # template_img must be a square
+    unit_w = template_w // 8
+    new_size_template = (template_w , template_h + (unit_w))
+    new_size_qr_code = ((unit_w * 6) , (unit_w * 6)) 
+
     qr_code_img = Image.open(image_stream) 
-    qr_code_img = resizing_image(qr_code_img, target_size=(700,700))
-    template_img.paste(qr_code_img,(150, 100, 150 + qr_code_img.size[0], 100 + qr_code_img.size[1]))
-    template_img = resizing_image(template_img, target_size=(600,600), border_size=0)
+    template_img = resizing_image(template_img, target_size=new_size_template)
+    qr_code_img = resizing_image(qr_code_img, target_size=new_size_qr_code)
+    template_img.paste(qr_code_img,(unit_w, unit_w, unit_w + qr_code_img.size[0], unit_w + qr_code_img.size[1]))
+    constant_w = 600
+    new_size_final = (constant_w, (new_size_template[1] * constant_w) // new_size_template[0])
+    template_img = resizing_image(template_img, target_size=new_size_final, border_size=0)
+
     img_bytes = BytesIO()
     template_img.save(img_bytes, format='PNG')
     return img_bytes.getvalue()

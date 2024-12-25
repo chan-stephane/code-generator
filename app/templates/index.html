@@ -43,71 +43,102 @@
             </div>
         </section>
         <!-- CTO -->
-
+        
         <!-- FORM -->
-        <section class="max-w-screen-xl mx-auto py-4 px-4 md:px-8">
-            <div class="absolute top-0 left-0 w-full h-full bg-white opacity-40"></div>
+        <section class="max-w-screen-xl mx-auto py-4 px-4 md:px-8 flex-grow">
+            <div class="absolute top-0 left-0 w-full bg-white opacity-40"></div>
             <div class="relative z-10 gap-5 items-center justify-between lg:flex">
                 <div id="form" class="flex-1 max-w-lg py-5 sm:mx-auto sm:text-center lg:max-w-max lg:text-left">
-                    <div class="max-w-xs mt-2">
-                        <label class="text-gray-600">
-                            Choose Type of Code
-                        </label>
-                        <select id="type-code" onchange="update_type()" class="w-full p-2.5 text-gray-800 bg-white border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600">
-                            <option value="qr-code">QR Code</option>
-                            <option value="bar-code">Bar Code</option>
-                        </select>
+                    <div class="max-w-xs mt-2 mb-10">
+                        <fieldset class="flex flex-wrap gap-3">
+                            <div>
+                                <label class="flex cursor-pointer items-center justify-center rounded-md border border-gray-100 bg-white px-3 py-2 text-gray-900 hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:bg-indigo-600 has-[:checked]:text-white" >
+                                    <input type="radio" name="mode" value="generate" id="generate" class="sr-only" checked />
+                                    <p class="text-sm font-medium">Generate</p>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label class="flex cursor-pointer items-center justify-center rounded-md border border-gray-100 bg-white px-3 py-2 text-gray-900 hover:border-gray-200 has-[:checked]:border-blue-500 has-[:checked]:bg-indigo-600 has-[:checked]:text-white" >
+                                    <input type="radio" name="mode" value="read" id="read" class="sr-only" />
+                                    <p class="text-sm font-medium">Read</p>
+                                </label>
+                            </div>
+                        </fieldset>
                     </div>
-                    <div class="max-w-xs mt-2">
-                        <label class="text-gray-600">
-                            Enter your data to generate the code
-                        </label>
-                        <input type="text" value="" id="data" placeholder="Enter your text or link" class="w-full p-2.5 text-gray-800 bg-white border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600" required/>
-                    </div>
-                    
-                    <div class="max-w-xs mt-2" id="div-bg">
-                        <label class="text-gray-600">
-                            Background
-                        </label>
-                        <input type="color" value="#ffffff" id="background" class="w-full h-10 p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600"/>
-                    </div>
+                    <div class="hidden" id="form-read">
+                        <div class="max-w-xs mt-2">
+                            <label class="text-gray-600">
+                                Put your qr code image
+                            </label>
+                            <input type="file" id="image-file" accept="image/*" class="w-full p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600" required/>
+                        </div>
 
-                    <div class="max-w-xs mt-2" id="div-fg">
-                        <label class="text-gray-600">
-                            Color
-                        </label>
-                        <input type="color" value="#000000" id="foreground" class="w-full h-10 p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600"/>
+                        <button onclick="read()" class="mt-5 px-4 py-2 text-indigo-600 font-medium bg-indigo-50 rounded-full inline-flex items-center" href="javascript:void()">
+                            Read
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-1 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="max-w-xs mt-2">
-                        <label class="text-gray-600">
-                            Add image 
-                        </label>
-                        <input type="text" value="" id="image-link" placeholder="Enter your image link" class="w-full p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600" required/>
-                    </div>
-                    <div class="max-w-xs mt-2" id="div-form">
-                        <label class="text-gray-600">
-                            Choose form
-                        </label>
-                        <select id="form-code" class="w-full p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600">
-                            <option value="square">Square</option>
-                            <option value="gapped_square">Gapped Square</option>
-                            <option value="circle">Circle</option>
-                            <option value="rounded">Rounded</option>
-                            <option value="vertical_bar">Vertical Bar</option>
-                            <option value="horizontal_bar">Horizontal Bar</option>
-                        </select>
-                    </div>
+                    <div id="form-generate">
+                        <div class="max-w-xs mt-2">
+                            <label class="text-gray-600">
+                                Choose Type of Code
+                            </label>
+                            <select id="type-code" onchange="update_type()" class="w-full p-2.5 text-gray-800 bg-white border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600">
+                                <option value="qr-code">QR Code</option>
+                                <option value="bar-code">Bar Code</option>
+                            </select>
+                        </div>
+                        <div class="max-w-xs mt-2">
+                            <label class="text-gray-600">
+                                Enter your data to generate the code
+                            </label>
+                            <input type="text" value="" id="data" placeholder="Enter your text or link" class="w-full p-2.5 text-gray-800 bg-white border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600" required/>
+                        </div>
+                        
+                        <div class="max-w-xs mt-2" id="div-bg">
+                            <label class="text-gray-600">
+                                Background
+                            </label>
+                            <input type="color" value="#ffffff" id="background" class="w-full h-10 p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600"/>
+                        </div>
 
-                    <button id="btn" onclick="generate()" class="mt-5 px-4 py-2 text-indigo-600 font-medium bg-indigo-50 rounded-full inline-flex items-center" href="javascript:void()">
-                        Generate
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-1 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                        </svg>
-                    </button>
-
+                        <div class="max-w-xs mt-2" id="div-fg">
+                            <label class="text-gray-600">
+                                Color
+                            </label>
+                            <input type="color" value="#000000" id="foreground" class="w-full h-10 p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600"/>
+                        </div>
+                        <div class="max-w-xs mt-2">
+                            <label class="text-gray-600">
+                                Add image 
+                            </label>
+                            <input type="text" value="" id="image-link" placeholder="Enter your image link" class="w-full p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600" required/>
+                        </div>
+                        <div class="max-w-xs mt-2" id="div-form">
+                            <label class="text-gray-600">
+                                Choose form
+                            </label>
+                            <select id="form-code" class="w-full p-2.5 text-gray-800 bg-white disabled:opacity-30 border rounded-md shadow-sm outline-none appearance-none focus:border-indigo-600">
+                                <option value="square">Square</option>
+                                <option value="gapped_square">Gapped Square</option>
+                                <option value="circle">Circle</option>
+                                <option value="rounded">Rounded</option>
+                                <option value="vertical_bar">Vertical Bar</option>
+                                <option value="horizontal_bar">Horizontal Bar</option>
+                            </select>
+                        </div>
+                        <button id="btn" onclick="generate()" class="mt-5 px-4 py-2 text-indigo-600 font-medium bg-indigo-50 rounded-full inline-flex items-center" href="javascript:void()">
+                            Generate
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-1 duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex mt-5 mx-auto lg:mt-0 lg:w-auto" id="img-div">
-                    
+                <div class="mt-5 mx-auto lg:mt-0 lg:w-auto" id="img-div">
                 </div>
             </div>
         </section>
@@ -116,7 +147,7 @@
         <!-- Footer -->
         <footer class="pt-10">
             <div
-            class="flex flex-inline mt-10 py-10 border-t items-center justify-between sm:flex"
+            class="flex flex-inline py-10 border-t items-center justify-between sm:flex"
             >
             <a href="https://www.chan-stephane.me" class="text-gray-600 ml-10" id="copyright">
             </a>

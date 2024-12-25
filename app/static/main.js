@@ -13,6 +13,21 @@ function update_type(){
     }
 }
 
+function initializeMode(){
+    $('input[name="mode"]').on('change', function () {
+        const selectedMode = $(this).val();
+        if (selectedMode === 'generate') {
+            $('#form-read').removeClass().addClass('hidden');
+            $('#form-generate').removeClass();
+            $('#img-div').empty();
+        } else if (selectedMode === 'read') {
+            $('#form-generate').removeClass().addClass('hidden');
+            $('#form-read').removeClass();
+            $('#img-div').empty();
+        }
+    });
+}
+
 function isHexadecimal(str) {
     const hexPattern = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
     return hexPattern.test(str);
@@ -22,8 +37,7 @@ function isValidForm(str){
     return ['square','gapped_square','circle','rounded','vertical_bar','horizontal_bar'].includes(str);
 }
 
-
-async function call(url, data) {
+async function callGenerate(url, data) {
     return new Promise((resolve, reject) => {
         let error_msg = 'Error on generate qr code';
         $.ajax({
@@ -68,11 +82,88 @@ function loaderComponent(){
     $('#img-div').empty().append(component);
 }
 
+function loadResult(result){
+    result.forEach(el => {
+        var div = $('<div>').addClass('flex items-center gap-x-3 p-2');
+        var img = $('<img>').attr({
+            src:`data:image/jpeg;base64, ${el.image_base64}`,
+            class: 'w-16 h-16'
+        });
+        var div_text = $('<div>').addClass('ml-10');
+        var text = $('<span>').addClass('block text-gray-700 font-medium').text(el.text);
+        div_text.append(text);
+        div.append(img);
+        div.append(div_text);
+        $('#img-div').append(div);
+    });
+}
+
+async function read(){
+    loaderComponent();
+    var formData = new FormData();
+    var fileInput = $('#image-file')[0];
+    if (fileInput.files.length > 0) {
+        var file = fileInput.files[0];
+        var url = window.location.origin + "/read";
+        var validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (validTypes.indexOf(file.type) === -1) {
+            Toastify({
+                text: "Please upload a valid image file (JPEG, PNG).",
+                backgroundColor: "rgb(230, 108, 81)",
+                close: true
+            }).showToast();
+            $('#img-div').empty();
+            return;
+        }
+        formData.append('file', file);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if(response.length > 0){
+                    $('#img-div').empty();
+                    loadResult(response);
+                    Toastify({
+                        text: "Reading code successfully",
+                        backgroundColor: "rgb(75, 230, 134)",
+                        close: true
+                    }).showToast();
+                }else{
+                    Toastify({
+                        text: "No qr code or bar code found in the image.",
+                        backgroundColor: "rgb(230, 108, 81)",
+                        close: true
+                    }).showToast();
+                    $('#img-div').empty();
+                }
+            },
+            error: function(xhr, status, error) {
+                Toastify({
+                    text: error,
+                    backgroundColor: "rgb(230, 108, 81)",
+                    close: true
+                }).showToast();
+                $('#img-div').empty();
+            }
+        });
+    }else{
+        Toastify({
+            text: "Please upload an image file.",
+            backgroundColor: "rgb(230, 108, 81)",
+            close: true
+        }).showToast();
+        $('#img-div').empty();
+    }
+}
+
 async function generate(){
     loaderComponent()
     var type_code = $('#type-code').find(":selected").val();
     var data = $('#data').val();
-    var endpoints = window.location.origin;
+    var base_url = window.location.origin;
     var background = '#ffffff';
     var color = '#000000';
     var form = 'square';
@@ -89,11 +180,11 @@ async function generate(){
         data_formatted.image_url = $('#image-link').val();
     }
     try {
-        const response = await call(endpoints + "/" + type_code + "/generate", data_formatted);
+        const response = await callGenerate(base_url + "/" + type_code + "/generate", data_formatted);
         var url = URL.createObjectURL(response);
         var url_download = url;
         if(type_code == 'qr-code'){
-            const response_download = await call(endpoints + "/" + type_code + "/download", data_formatted);
+            const response_download = await callGenerate(base_url + "/" + type_code + "/download", data_formatted);
             url_download = URL.createObjectURL(response_download);
         }
         Toastify({
@@ -129,4 +220,5 @@ async function generate(){
 
 $(document).ready(function() {
     load();
+    initializeMode();
 });

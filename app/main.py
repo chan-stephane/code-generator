@@ -1,12 +1,12 @@
 from typing import Optional
-from fastapi import FastAPI, Query, Request, HTTPException
+from fastapi import FastAPI, Query, Request, HTTPException, File, UploadFile
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote, unquote
 from fastapi.responses import StreamingResponse, JSONResponse
-from code_generator import generate_qrcode, generate_qrcode_download, generate_barcode
+from code_generator import generate_qrcode, generate_qrcode_download, generate_barcode, read_qrcode
 from io import BytesIO
 
 
@@ -82,6 +82,15 @@ async def generate_qrcode_download_endpoint(request: QRCodeRequest):
     try:
         qr_code_data = generate_qrcode_download(request.data, request.color, request.bg_color, request.style_points, request.image_url)
         return StreamingResponse(BytesIO(qr_code_data), media_type="image/png")
+    except HTTPException as e:
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+
+@app.post("/read")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        file_content = await file.read()
+        qr_code_data = read_qrcode(file_content)
+        return JSONResponse(content=qr_code_data, status_code=200)
     except HTTPException as e:
         return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
 

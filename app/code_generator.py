@@ -5,7 +5,9 @@ from qrcode.image.styles.moduledrawers.pil import *
 from qrcode.image.styles.colormasks import *
 from barcode.writer import ImageWriter
 from fastapi import HTTPException
+from base64 import b64encode
 from pathlib import Path
+from pyzbar.pyzbar import decode
 import qrcode,barcode,requests,random
 
 
@@ -150,3 +152,31 @@ def generate_qrcode_download(data, qr_color=None, background_color=None, style_p
     template_img.save(img_bytes, format='PNG')
     return img_bytes.getvalue()
     
+
+def read_qrcode(image_path_or_bytes):
+    try:
+        if isinstance(image_path_or_bytes, bytes):
+            image = Image.open(BytesIO(image_path_or_bytes))
+        else:
+            image = Image.open(image_path_or_bytes)
+        decoded_objects = decode(image)
+        result = []
+        if decoded_objects:
+            for obj in decoded_objects:
+                rect = obj.rect
+                left, top, width, height = rect.left, rect.top, rect.width, rect.height
+                box = (left, top, left + width, top + height)
+                cropped_image = image.crop(box)
+                buffered = BytesIO()
+                cropped_image.save(buffered, format="PNG")
+                base64_image = b64encode(buffered.getvalue()).decode("utf-8")
+                
+                result.append({
+                    "text": obj.data.decode("utf-8"),
+                    "image_base64": base64_image
+                })
+            return result
+        else:
+            return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

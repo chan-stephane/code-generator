@@ -37,6 +37,28 @@ function isValidForm(str){
     return ['square','gapped_square','circle','rounded','vertical_bar','horizontal_bar'].includes(str);
 }
 
+function copy(){
+    var el = $(event.target);
+    var input = el.closest('div').prev().find('input');
+    var textToCopy = input.val();
+    el.text('Copied!');
+    navigator.clipboard.writeText(textToCopy).then(function() {
+        el.text('Copied!');
+        Toastify({
+            text: "Data copied!",
+            backgroundColor: "rgb(75, 230, 134)",
+            close: true
+        }).showToast();
+    }).catch(function(error) {
+        el.text('Failed!');
+        Toastify({
+            text: "Failed to copy!",
+            backgroundColor: "rgb(230, 108, 81)",
+            close: true
+        }).showToast();
+    });
+}
+
 async function callGenerate(url, data) {
     return new Promise((resolve, reject) => {
         let error_msg = 'Error on generate qr code';
@@ -89,11 +111,23 @@ function loadResult(result){
             src:`data:image/jpeg;base64, ${el.image_base64}`,
             class: 'w-16 h-16'
         });
-        var div_text = $('<div>').addClass('ml-10');
-        var text = $('<span>').addClass('block text-gray-700 font-medium').text(el.text);
+        var div_text = $('<div>').addClass('ml-5');
+        var text = $('<input>').attr({
+            class: 'w-full p-4 text-gray-800 bg-white disabled:opacity-80 border rounded-md shadow-sm block focus:border-indigo-600 font-medium',
+            type: 'text',
+            value: el.text,
+            disabled: 'disabled'
+        });
+        var div_copy = $('<div>').addClass('ml-5');
+        var copy = $('<button>').attr({
+            class:'p-4 bg-indigo-600 text-white rounded-md',
+            onclick:'copy()'
+        }).text('Copy');
         div_text.append(text);
+        div_copy.append(copy);
         div.append(img);
         div.append(div_text);
+        div.append(div_copy);
         $('#img-div').append(div);
     });
 }

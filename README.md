@@ -5,10 +5,11 @@ A simple API for generate a qr code and bar code
 
 ## Installation
 
-clone this repository and install python 3.8 or highter, and install dependencies
+clone this repository and install python 3.8 or highter, zbar library 
+and install dependencies
 
 ```bash
-pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]" jinja2
+pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]" jinja2 pyzbar python-multipart
 ```
     
 
@@ -73,6 +74,17 @@ or for more customize qr code you can use
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `data` | `string` | **Required**. Your data |
+
+
+#### Read a QR or Bar code
+
+```bash
+  POST /read
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `file` | `file` | **Required**. Your image qr/bar code file |
 
 
 

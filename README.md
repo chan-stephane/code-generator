@@ -18,7 +18,7 @@ pip install Pillow python-barcode qrcode fastapi requests "uvicorn[standard]" ji
 run this command to run the project:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8081
+uvicorn main:app --host 0.0.0.0 --port 8081
 ```
 
 ## Run in Docker

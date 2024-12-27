@@ -2,7 +2,7 @@ function update_type(){
     var el = event.target;
     if (el.value == 'bar-code'){
         $('#background').attr('disabled','disabled');
-        $('#foreground').attr('disabled','disabled');
+        $('#foreground').attr('dishttps://code-generator.chan-stephane.me/abled','disabled');
         $('#form-code').attr('disabled','disabled');
         $('#image-link').attr('disabled','disabled');
     }else{
@@ -108,7 +108,7 @@ function loadResult(result){
     result.forEach(el => {
         var div = $('<div>').addClass('flex items-center gap-x-3 p-2');
         var img = $('<img>').attr({
-            src:`data:image/jpeg;base64, ${el.image_base64}`,
+            src:`data:image/png;base64, ${el.image_base64}`,
             class: 'w-16 h-16'
         });
         var div_text = $('<div>').addClass('ml-5');

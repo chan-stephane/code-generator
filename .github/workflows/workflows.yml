@@ -1,0 +1,23 @@
+name: Deploying
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploying App
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.IP_SERVER }}
+          username: ${{ secrets.USERNAME_SERVER }}
+          password: ${{ secrets.PASSWORD_SERVER }}
+          port: 22
+          script: |
+            cd ${{ secrets.PATH_APP_SERVER }}
+            docker compose down
+            docker rmi ${{ secrets.DOCKER_IMAGE }}
+            docker compose up -d

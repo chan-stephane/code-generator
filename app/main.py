@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI, Query, Request, HTTPException, File, UploadFile
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from urllib.parse import quote, unquote
@@ -44,6 +44,15 @@ def index(request: Request):
         request=request, name="index.html"
     )
 
+@app.get("/robots.txt", response_class=FileResponse)
+async def serve_robots_txt():
+    file_path = "static/robots.txt"
+    return FileResponse(file_path, media_type="text/plain")
+
+@app.get("/sitemap.xml", response_class=FileResponse)
+async def serve_sitemap_xml():
+    file_path = "static/sitemap.xml"
+    return FileResponse(file_path, media_type="application/xml")
 
 @app.get("/up")
 def welcome(request: Request):

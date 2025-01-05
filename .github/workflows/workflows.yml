@@ -20,4 +20,6 @@ jobs:
             cd ${{ secrets.PATH_APP_SERVER }}
             docker compose down
             docker rmi ${{ secrets.DOCKER_IMAGE }}
+            git fetch
+            git pull
             docker compose up -d

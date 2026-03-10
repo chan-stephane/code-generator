@@ -4,6 +4,7 @@ services:
     build: .
     image: code-generator:latest
     container_name: code-generator
+    restart: unless-stopped
     ports:
       - 8081:8081
     environment:
